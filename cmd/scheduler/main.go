@@ -8,7 +8,7 @@ import (
 	"net/http"
 	"os"
 	"scheduler/internal/config"
-	"scheduler/internal/handlers/api"
+	"scheduler/internal/handlers"
 	"scheduler/internal/storage"
 )
 
@@ -32,7 +32,8 @@ func main() {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Handle("/*", http.FileServer(http.Dir(cfg.FileServer)))
-	r.HandleFunc("/api/nextdate", api.ApiNextDateHandler)
+	r.HandleFunc("/api/nextdate", handlers.ApiNextDateHandler)
+	r.HandleFunc("/api/task", handlers.AddTaskHandler)
 
 	log.Info("scheduler started", slog.String("Port", cfg.Port), slog.String("Database", cfg.StoragePath))
 
