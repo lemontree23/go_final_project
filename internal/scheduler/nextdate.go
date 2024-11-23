@@ -42,7 +42,45 @@ func NextDate(now time.Time, date string, repeat string) (string, error) {
 			next_date = next_date.AddDate(1, 0, 0)
 		}
 		return next_date.Format("20060102"), nil
+	case "w":
+		if len(parts) != 2 {
+			return "", fmt.Errorf("invalid weekly interval")
+		}
 
+		days := strings.Split(parts[1], ",")
+
+		var daysOfWeek []int
+		for _, wd := range days {
+			day, err := strconv.Atoi(wd)
+			if err != nil || day < 1 || day > 7 {
+				return "", errors.New("Неверный формат дня недели")
+			}
+			daysOfWeek = append(daysOfWeek, day)
+		}
+
+		// Переводим воскресенье в 7
+		currentWeekday := int(now.Weekday())
+		if currentWeekday == 0 {
+			currentWeekday = 7
+		}
+
+		var closestDate time.Time
+		// Максимально количество дней для поиска
+		minDayToAdd := 7
+
+		//Ищем ближайший день недели
+		for _, day := range daysOfWeek {
+			daysToAdd := (day - currentWeekday + 7) % 7
+			if daysToAdd == 0 {
+				minDayToAdd = 7
+			}
+			if daysToAdd < minDayToAdd {
+				minDayToAdd = daysToAdd
+				closestDate = now.AddDate(0, 0, daysToAdd)
+			}
+			return closestDate.Format(TimeFormat), nil
+		}
+		return "", err
 	default:
 		return "", errors.New("unsupported or invalid repeat rule")
 	}
