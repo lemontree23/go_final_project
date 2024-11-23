@@ -33,8 +33,22 @@ func main() {
 	r.Use(middleware.Logger)
 	r.Handle("/*", http.FileServer(http.Dir(cfg.FileServer)))
 	r.HandleFunc("/api/nextdate", handlers.ApiNextDateHandler)
-	r.HandleFunc("/api/task", handlers.AddTaskHandler)
+	r.HandleFunc("/api/task", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodPost:
+			handlers.AddTaskHandler(w, r)
+		case http.MethodGet:
+			handlers.GetTaskHandler(w, r)
+		case http.MethodPut:
+			handlers.UpdateTaskHandler(w, r)
+		case http.MethodDelete:
+			handlers.DeleteTaskHandler(w, r)
+		default:
+			http.Error(w, `{"error":"Метод не поддерживается"}`, http.StatusMethodNotAllowed)
+		}
+	})
 	r.HandleFunc("/api/tasks", handlers.GetTasksHandler)
+	r.HandleFunc("/api/task/done", handlers.MarkTaskDoneHandler)
 
 	log.Info("scheduler started", slog.String("Port", cfg.Port), slog.String("Database", cfg.StoragePath))
 
