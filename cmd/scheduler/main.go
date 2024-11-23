@@ -34,8 +34,12 @@ func main() {
 	r.Handle("/*", http.FileServer(http.Dir(cfg.FileServer)))
 	r.HandleFunc("/api/nextdate", handlers.ApiNextDateHandler)
 	r.HandleFunc("/api/task", handlers.AddTaskHandler)
+	r.HandleFunc("/api/tasks", handlers.GetTasksHandler)
 
 	log.Info("scheduler started", slog.String("Port", cfg.Port), slog.String("Database", cfg.StoragePath))
 
-	http.ListenAndServe(":"+cfg.Port, r)
+	err = http.ListenAndServe(":"+cfg.Port, r)
+	if err != nil {
+		log.Error("Failed to start server", slog.String("Error", err.Error()))
+	}
 }
