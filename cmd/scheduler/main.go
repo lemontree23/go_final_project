@@ -22,7 +22,7 @@ func main() {
 	//database
 	storage, err := storage.New(cfg.StoragePath)
 	if err != nil {
-		log.Error("Failed to initialize storage")
+		log.Error("Failed to initialize storage:", err)
 		os.Exit(1)
 	}
 
