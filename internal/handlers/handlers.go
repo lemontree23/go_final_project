@@ -13,7 +13,7 @@ import (
 	"time"
 )
 
-func ApiNextDateHandler(w http.ResponseWriter, r *http.Request) {
+func NextDateHandler(w http.ResponseWriter, r *http.Request) {
 	nowStr := r.FormValue("now")
 	dateStr := r.FormValue("date")
 	repeatStr := r.FormValue("repeat")

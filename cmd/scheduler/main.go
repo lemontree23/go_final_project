@@ -32,7 +32,7 @@ func main() {
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 	r.Handle("/*", http.FileServer(http.Dir(cfg.FileServer)))
-	r.HandleFunc("/api/nextdate", handlers.ApiNextDateHandler)
+	r.HandleFunc("/api/nextdate", handlers.NextDateHandler)
 	r.HandleFunc("/api/task", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodPost:
