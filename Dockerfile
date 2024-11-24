@@ -10,14 +10,14 @@ COPY . .
 
 RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o scheduler ./cmd/scheduler/main.go
 
-FROM alpine:3.18
+FROM ubuntu:latest
 
 WORKDIR /scheduler
 
-RUN apk add gcc
-
 COPY --from=builder /scheduler/scheduler /scheduler
 COPY ./config config
+COPY ./web web
+COPY ./storage storage
 
 EXPOSE 7540
 
