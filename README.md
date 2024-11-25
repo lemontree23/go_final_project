@@ -9,6 +9,16 @@
 
 Директория `web` содержит файлы фронтенда.
 
+# Задачи со звёздочкой
+
+- [x] TODO_PORT
+- [x] TODO_DBFILE
+- [ ] NextDate
+  - [x] w
+  - [ ] m
+- [ ] Search
+- [ ] Auth
+- [x] Docker
 
 # docker
 
