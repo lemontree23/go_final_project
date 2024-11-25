@@ -17,7 +17,6 @@ WORKDIR /scheduler
 COPY --from=builder /scheduler/scheduler /scheduler
 COPY ./config config
 COPY ./web web
-COPY ./storage storage
 
 EXPOSE 7540
 
