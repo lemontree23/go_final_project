@@ -1,0 +1,14 @@
+version: '3.9'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${TODO_PORT:-7540}:${TODO_PORT:-7540}"
+    env_file:
+      - ./.env
+    volumes:
+      - ./storage:/scheduler/storage
+    command: ./scheduler
