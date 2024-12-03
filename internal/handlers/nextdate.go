@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"scheduler/internal/config"
 	"scheduler/internal/scheduler"
 	"time"
 )
@@ -17,7 +18,7 @@ func NextDateHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	now, err := time.Parse("20060102", nowStr)
+	now, err := time.Parse(config.TimeFormat, nowStr)
 	if err != nil {
 		http.Error(w, "invalid 'now' parameter", http.StatusBadRequest)
 		return

@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"scheduler/internal/config"
 	"scheduler/internal/model"
 	"scheduler/internal/scheduler"
 	"scheduler/internal/storage"
@@ -30,19 +31,19 @@ func AddTaskHandler(w http.ResponseWriter, r *http.Request, storage *storage.Sto
 	}
 
 	now := time.Now()
-	today := now.Format("20060102")
+	today := now.Format(config.TimeFormat)
 
 	if strings.TrimSpace(task.Date) == "" {
 		task.Date = today
 	}
 
-	taskDate, err := time.Parse("20060102", task.Date)
+	taskDate, err := time.Parse(config.TimeFormat, task.Date)
 	if err != nil {
 		http.Error(w, `{"error":"Дата указана в неправильном формате"}`, http.StatusBadRequest)
 		return
 	}
 
-	if taskDate.Format("20060102") != today {
+	if taskDate.Format(config.TimeFormat) != today {
 		if strings.TrimSpace(task.Repeat) == "" {
 			task.Date = today
 		} else {

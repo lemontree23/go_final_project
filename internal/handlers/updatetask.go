@@ -3,6 +3,7 @@ package handlers
 import (
 	"encoding/json"
 	"net/http"
+	"scheduler/internal/config"
 	"scheduler/internal/model"
 	"scheduler/internal/storage"
 	"time"
@@ -33,7 +34,7 @@ func UpdateTaskHandler(w http.ResponseWriter, r *http.Request, storage *storage.
 		return
 	}
 
-	if _, err := time.Parse("20060102", task.Date); err != nil {
+	if _, err := time.Parse(config.TimeFormat, task.Date); err != nil {
 		http.Error(w, `{"error":"Неверный формат даты"}`, http.StatusBadRequest)
 		return
 	}

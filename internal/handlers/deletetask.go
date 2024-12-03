@@ -21,7 +21,12 @@ func DeleteTaskHandler(w http.ResponseWriter, r *http.Request, storage *storage.
 	}
 
 	rowsAffected, err := result.RowsAffected()
-	if err != nil || rowsAffected == 0 {
+	if err != nil {
+		http.Error(w, `{"error":"Задача не найдена"}`, http.StatusNotFound)
+		return
+	}
+
+	if rowsAffected == 0 {
 		http.Error(w, `{"error":"Задача не найдена"}`, http.StatusNotFound)
 		return
 	}

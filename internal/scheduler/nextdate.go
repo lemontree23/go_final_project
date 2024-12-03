@@ -3,19 +3,18 @@ package scheduler
 import (
 	"errors"
 	"fmt"
+	"scheduler/internal/config"
 	"strconv"
 	"strings"
 	"time"
 )
-
-const TimeFormat = "20060102"
 
 func NextDate(now time.Time, date string, repeat string) (string, error) {
 	if repeat == "" {
 		return "", fmt.Errorf("repeat is required")
 	}
 
-	start_date, err := time.Parse(TimeFormat, date)
+	start_date, err := time.Parse(config.TimeFormat, date)
 	if err != nil {
 		return "", fmt.Errorf("failed to parse task date: %w", err)
 	}
@@ -35,13 +34,13 @@ func NextDate(now time.Time, date string, repeat string) (string, error) {
 		for !next_date.After(now) {
 			next_date = next_date.AddDate(0, 0, days)
 		}
-		return next_date.Format(TimeFormat), nil
+		return next_date.Format(config.TimeFormat), nil
 	case "y":
 		next_date := start_date.AddDate(1, 0, 0)
 		for !next_date.After(now) {
 			next_date = next_date.AddDate(1, 0, 0)
 		}
-		return next_date.Format("20060102"), nil
+		return next_date.Format(config.TimeFormat), nil
 	case "w":
 		if len(parts) != 2 {
 			return "", fmt.Errorf("invalid weekly interval")
@@ -78,7 +77,7 @@ func NextDate(now time.Time, date string, repeat string) (string, error) {
 				minDayToAdd = daysToAdd
 				closestDate = now.AddDate(0, 0, daysToAdd)
 			}
-			return closestDate.Format(TimeFormat), nil
+			return closestDate.Format(config.TimeFormat), nil
 		}
 		return "", err
 	default:

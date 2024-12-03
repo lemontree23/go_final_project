@@ -3,6 +3,7 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"scheduler/internal/config"
 	"scheduler/internal/model"
@@ -28,9 +29,9 @@ func GetTasksHandler(w http.ResponseWriter, r *http.Request) {
 	var args []interface{}
 
 	if strings.TrimSpace(search) != "" {
-		if searchDate, err := time.Parse("02.01.2006", search); err == nil {
+		if searchDate, err := time.Parse(config.TimeFormat, search); err == nil {
 			query += " AND date = ?"
-			args = append(args, searchDate.Format("20060102"))
+			args = append(args, searchDate.Format(config.TimeFormat))
 		} else {
 			query += " AND (title LIKE ? OR comment LIKE ?)"
 			searchTerm := "%" + search + "%"
@@ -38,7 +39,7 @@ func GetTasksHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	query += " ORDER BY date ASC LIMIT 50"
+	query += fmt.Sprintf(" ORDER BY date ASC LIMIT %d", config.StorageLimit)
 
 	rows, err := db.Query(query, args...)
 	if err != nil {
