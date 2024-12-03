@@ -1,4 +1,4 @@
-FROM golang:1.22 AS builder
+FROM golang:1.22.3 AS builder
 
 WORKDIR /scheduler
 
@@ -8,17 +8,17 @@ RUN go mod download
 
 COPY . .
 
-RUN CGO_ENABLED=1 GOOS=linux GOARCH=amd64 go build -o scheduler ./cmd/scheduler/main.go
+RUN go build -o scheduler ./cmd/scheduler/main.go
 
 FROM ubuntu:latest
 
 WORKDIR /scheduler
 
+RUN mkdir storage
+
 COPY --from=builder /scheduler/scheduler /scheduler
 COPY ./config config
 COPY ./web web
-
-EXPOSE 7540
 
 CMD ["./scheduler"]
 
