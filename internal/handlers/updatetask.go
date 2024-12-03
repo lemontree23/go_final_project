@@ -1,17 +1,14 @@
 package handlers
 
 import (
-	"database/sql"
 	"encoding/json"
 	"net/http"
-	"scheduler/internal/config"
 	"scheduler/internal/model"
+	"scheduler/internal/storage"
 	"time"
 )
 
-func UpdateTaskHandler(w http.ResponseWriter, r *http.Request) {
-	cfg := config.MustLoad()
-
+func UpdateTaskHandler(w http.ResponseWriter, r *http.Request, storage *storage.Storage) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
 	var task model.Tasks
@@ -41,14 +38,8 @@ func UpdateTaskHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db, err := sql.Open("sqlite3", cfg.StoragePath)
-	if err != nil {
-		http.Error(w, `{"error":"Ошибка подключения к базе данных"}`, http.StatusInternalServerError)
-		return
-	}
-	defer db.Close()
-
 	query := "UPDATE scheduler SET date = ?, title = ?"
+
 	if task.Comment != "" {
 		query += ", comment = ?"
 	}
@@ -56,7 +47,8 @@ func UpdateTaskHandler(w http.ResponseWriter, r *http.Request) {
 		query += ", repeat = ?"
 	}
 	query += " WHERE id = ?"
-	result, err := db.Exec(query, task.Date, task.Title, task.Comment, task.Repeat, task.ID)
+
+	result, err := storage.Exec(query, task.Date, task.Title, task.Comment, task.Repeat, task.ID)
 	if err != nil {
 		http.Error(w, `{"error":"Ошибка обновления задачи"}`, http.StatusInternalServerError)
 		return

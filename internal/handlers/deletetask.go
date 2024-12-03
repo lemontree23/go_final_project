@@ -1,14 +1,11 @@
 package handlers
 
 import (
-	"database/sql"
 	"net/http"
-	"scheduler/internal/config"
+	"scheduler/internal/storage"
 )
 
-func DeleteTaskHandler(w http.ResponseWriter, r *http.Request) {
-	cfg := config.MustLoad()
-
+func DeleteTaskHandler(w http.ResponseWriter, r *http.Request, storage *storage.Storage) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
 	id := r.URL.Query().Get("id")
@@ -17,14 +14,7 @@ func DeleteTaskHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	db, err := sql.Open("sqlite3", cfg.StoragePath)
-	if err != nil {
-		http.Error(w, `{"error":"Ошибка подключения к базе данных"}`, http.StatusInternalServerError)
-		return
-	}
-	defer db.Close()
-
-	result, err := db.Exec("DELETE FROM scheduler WHERE id = ?", id)
+	result, err := storage.Exec("DELETE FROM scheduler WHERE id = ?", id)
 	if err != nil {
 		http.Error(w, `{"error":"Ошибка при удалении задачи"}`, http.StatusInternalServerError)
 		return

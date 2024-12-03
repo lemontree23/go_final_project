@@ -25,8 +25,7 @@ func main() {
 		log.Error("Failed to initialize storage:", err)
 		os.Exit(1)
 	}
-
-	_ = storage
+	defer storage.Close()
 
 	//router
 	r := chi.NewRouter()
@@ -36,20 +35,21 @@ func main() {
 	r.HandleFunc("/api/task", func(w http.ResponseWriter, r *http.Request) {
 		switch r.Method {
 		case http.MethodPost:
-			handlers.AddTaskHandler(w, r)
+			handlers.AddTaskHandler(w, r, storage)
 		case http.MethodGet:
-			handlers.GetTaskHandler(w, r)
+			handlers.GetTaskHandler(w, r, storage)
 		case http.MethodPut:
-			handlers.UpdateTaskHandler(w, r)
+			handlers.UpdateTaskHandler(w, r, storage)
 		case http.MethodDelete:
-			handlers.DeleteTaskHandler(w, r)
+			handlers.DeleteTaskHandler(w, r, storage)
 		default:
 			http.Error(w, `{"error":"Метод не поддерживается"}`, http.StatusMethodNotAllowed)
 		}
 	})
 	r.HandleFunc("/api/tasks", handlers.GetTasksHandler)
-	r.HandleFunc("/api/task/done", handlers.MarkTaskDoneHandler)
-
+	r.HandleFunc("/api/task/done", func(w http.ResponseWriter, r *http.Request) {
+		handlers.MarkTaskDoneHandler(w, r, storage)
+	})
 	log.Info("scheduler started", slog.String("Port", cfg.Port), slog.String("Database", cfg.StoragePath))
 
 	err = http.ListenAndServe(":"+cfg.Port, r)

@@ -3,68 +3,34 @@ package handlers
 import (
 	"database/sql"
 	"encoding/json"
+	"errors"
 	"net/http"
-	"scheduler/internal/config"
 	"scheduler/internal/model"
-	"strings"
-	"time"
+	"scheduler/internal/storage"
 )
 
-func GetTasksHandler(w http.ResponseWriter, r *http.Request) {
-	cfg := config.MustLoad()
-
+func GetTaskHandler(w http.ResponseWriter, r *http.Request, storage *storage.Storage) {
 	w.Header().Set("Content-Type", "application/json; charset=UTF-8")
 
-	db, err := sql.Open("sqlite3", cfg.StoragePath)
-	if err != nil {
-		http.Error(w, `{"error":"Ошибка подключения к базе данных"}`, http.StatusInternalServerError)
-		return
-	}
-	defer db.Close()
-
-	search := r.URL.Query().Get("search")
-
-	query := "SELECT id, date, title, comment, repeat FROM scheduler WHERE 1=1"
-	var args []interface{}
-
-	if strings.TrimSpace(search) != "" {
-		if searchDate, err := time.Parse("02.01.2006", search); err == nil {
-			query += " AND date = ?"
-			args = append(args, searchDate.Format("20060102"))
-		} else {
-			query += " AND (title LIKE ? OR comment LIKE ?)"
-			searchTerm := "%" + search + "%"
-			args = append(args, searchTerm, searchTerm)
-		}
-	}
-
-	query += " ORDER BY date ASC LIMIT 50"
-
-	rows, err := db.Query(query, args...)
-	if err != nil {
-		http.Error(w, `{"error":"Ошибка выполнения запроса к базе данных"}`, http.StatusInternalServerError)
-		return
-	}
-	defer rows.Close()
-
-	tasks := []model.Tasks{}
-	for rows.Next() {
-		var task model.Tasks
-		if err := rows.Scan(&task.ID, &task.Task.Date, &task.Task.Title, &task.Task.Comment, &task.Task.Repeat); err != nil {
-			http.Error(w, `{"error":"Ошибка обработки данных из базы"}`, http.StatusInternalServerError)
-			return
-		}
-		tasks = append(tasks, task)
-	}
-
-	if err = rows.Err(); err != nil {
-		http.Error(w, `{"error":"Ошибка чтения данных"}`, http.StatusInternalServerError)
+	id := r.URL.Query().Get("id")
+	if id == "" {
+		http.Error(w, `{"error":"Не указан идентификатор"}`, http.StatusBadRequest)
 		return
 	}
 
-	if tasks == nil {
-		tasks = []model.Tasks{}
+	var task model.Tasks
+	err := storage.QueryRow("SELECT id, date, title, comment, repeat FROM scheduler WHERE id = ?", id).
+		Scan(&task.ID, &task.Date, &task.Title, &task.Comment, &task.Repeat)
+	if errors.Is(err, sql.ErrNoRows) {
+		http.Error(w, `{"error":"Задача не найдена"}`, http.StatusNotFound)
+		return
+	} else if err != nil {
+		http.Error(w, `{"error":"Ошибка выполнения запроса"}`, http.StatusInternalServerError)
+		return
 	}
-	response := model.ResponseTasks{Tasks: tasks}
-	json.NewEncoder(w).Encode(response)
+
+	if err := json.NewEncoder(w).Encode(task); err != nil {
+		http.Error(w, `{"error":"Ошибка формирования ответа"}`, http.StatusInternalServerError)
+		return
+	}
 }

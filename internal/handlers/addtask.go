@@ -1,19 +1,16 @@
 package handlers
 
 import (
-	"database/sql"
 	"encoding/json"
 	"net/http"
-	"scheduler/internal/config"
 	"scheduler/internal/model"
 	"scheduler/internal/scheduler"
+	"scheduler/internal/storage"
 	"strings"
 	"time"
 )
 
-func AddTaskHandler(w http.ResponseWriter, r *http.Request) {
-	cfg := config.MustLoad()
-
+func AddTaskHandler(w http.ResponseWriter, r *http.Request, storage *storage.Storage) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Метод не поддерживается", http.StatusMethodNotAllowed)
 		return
@@ -58,15 +55,7 @@ func AddTaskHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	db, err := sql.Open("sqlite3", cfg.StoragePath)
-	if err != nil {
-		http.Error(w, `{"error":"Ошибка подключения к базе данных"}`, http.StatusInternalServerError)
-		return
-	}
-	defer db.Close()
-
-	query := "INSERT INTO scheduler (date, title, comment, repeat) VALUES (?, ?, ?, ?)"
-	res, err := db.Exec(query, task.Date, task.Title, task.Comment, task.Repeat)
+	res, err := storage.Exec("INSERT INTO scheduler (date, title, comment, repeat) VALUES (?, ?, ?, ?)", task.Date, task.Title, task.Comment, task.Repeat)
 	if err != nil {
 		http.Error(w, `{"error":"Ошибка записи в базу данных"}`, http.StatusInternalServerError)
 		return

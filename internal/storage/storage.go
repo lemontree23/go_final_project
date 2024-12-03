@@ -37,3 +37,15 @@ func New(storagePath string) (*Storage, error) {
 
 	return &Storage{db: db}, nil
 }
+
+func (s *Storage) Close() {
+	s.db.Close()
+}
+
+func (s *Storage) Exec(query string, args ...interface{}) (sql.Result, error) {
+	return s.db.Exec(query, args...)
+}
+
+func (s *Storage) QueryRow(query string, args ...interface{}) *sql.Row {
+	return s.db.QueryRow(query, args...)
+}
