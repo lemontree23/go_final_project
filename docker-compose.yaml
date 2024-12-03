@@ -1,0 +1,16 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "${TODO_PORT:-7540}:${TODO_PORT:-7540}"
+    environment:
+      CGO_ENABLED: 1
+      GOOS: linux
+      GOARCH: amd64
+    env_file:
+      - ./.env
+    volumes:
+      - ./storage:/scheduler/storage
+    command: ./scheduler
