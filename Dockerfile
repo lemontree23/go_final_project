@@ -17,7 +17,6 @@ WORKDIR /scheduler
 RUN mkdir storage
 
 COPY --from=builder /scheduler/scheduler /scheduler
-COPY ./config config
 COPY ./web web
 
 CMD ["./scheduler"]
