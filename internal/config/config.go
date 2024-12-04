@@ -2,8 +2,8 @@ package config
 
 import (
 	"cmp"
+	"fmt"
 	"github.com/joho/godotenv"
-	"log"
 	"os"
 )
 
@@ -16,7 +16,7 @@ type Config struct {
 func MustLoad() *Config {
 	err := godotenv.Load(".env")
 	if err != nil {
-		log.Fatalf("Error loading .env file: %w", err)
+		fmt.Errorf("error loading .env file: %w", err)
 	}
 
 	var cfg Config
