@@ -1,29 +1,29 @@
 package config
 
 import (
-	"github.com/ilyakaznacheev/cleanenv"
+	"cmp"
+	"github.com/joho/godotenv"
 	"log"
 	"os"
 )
 
 type Config struct {
-	Port        string `yaml:"port" env:"TODO_PORT"`
-	StoragePath string `yaml:"storagePath" env:"TODO_DBFILE"`
+	Port        string `yaml:"port"`
+	StoragePath string `yaml:"storagePath"`
 	FileServer  string `yaml:"fileServer"`
 }
 
 func MustLoad() *Config {
-	configPath := "./config/config.yaml"
-
-	if _, err := os.Stat(configPath); os.IsNotExist(err) {
-		log.Fatalf("config file not found: %s", configPath)
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
 	}
 
 	var cfg Config
 
-	if err := cleanenv.ReadConfig(configPath, &cfg); err != nil {
-		log.Fatalf("failed to read config: %s", err)
-	}
+	cfg.Port = cmp.Or(os.Getenv("TODO_PORT"), "7540")
+	cfg.StoragePath = cmp.Or(os.Getenv("TODO_DBFILE"), "./storage/scheduler.db")
+	cfg.FileServer = cmp.Or(os.Getenv("TODO_FILESERVER"), "./web")
 
 	return &cfg
 }

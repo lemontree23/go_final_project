@@ -1,3 +1,0 @@
-port: "7540"
-storagePath: "./storage/scheduler.db"
-fileServer: "./web"
