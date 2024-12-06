@@ -1,0 +1,60 @@
+package main
+
+import (
+	"log/slog"
+	"net/http"
+	"os"
+	"scheduler/internal/config"
+	"scheduler/internal/handlers"
+	"scheduler/internal/storage"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	_ "github.com/mattn/go-sqlite3"
+)
+
+func main() {
+	//init config
+	cfg := config.MustLoad()
+
+	//logger
+	log := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{Level: slog.LevelInfo}))
+
+	//database
+	storage, err := storage.New(cfg.StoragePath)
+	if err != nil {
+		log.Error("Failed to initialize storage:", err)
+		os.Exit(1)
+	}
+	defer storage.Close()
+
+	//router
+	r := chi.NewRouter()
+	r.Use(middleware.Logger)
+	r.Handle("/*", http.FileServer(http.Dir(cfg.FileServer)))
+	r.HandleFunc("/api/nextdate", handlers.NextDateHandler)
+	r.HandleFunc("/api/task", func(w http.ResponseWriter, r *http.Request) {
+		switch r.Method {
+		case http.MethodPost:
+			handlers.AddTaskHandler(w, r, storage)
+		case http.MethodGet:
+			handlers.GetTaskHandler(w, r, storage)
+		case http.MethodPut:
+			handlers.UpdateTaskHandler(w, r, storage)
+		case http.MethodDelete:
+			handlers.DeleteTaskHandler(w, r, storage)
+		default:
+			http.Error(w, `{"error":"Метод не поддерживается"}`, http.StatusMethodNotAllowed)
+		}
+	})
+	r.HandleFunc("/api/tasks", handlers.GetTasksHandler)
+	r.HandleFunc("/api/task/done", func(w http.ResponseWriter, r *http.Request) {
+		handlers.MarkTaskDoneHandler(w, r, storage)
+	})
+	log.Info("scheduler started", slog.String("Port", cfg.Port), slog.String("Database", cfg.StoragePath))
+
+	err = http.ListenAndServe(":"+cfg.Port, r)
+	if err != nil {
+		log.Error("Failed to start server", slog.String("Error", err.Error()))
+	}
+}
