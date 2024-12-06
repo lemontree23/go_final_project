@@ -155,7 +155,7 @@ func GetTasksHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	query += fmt.Sprintf(" ORDER BY date ASC LIMIT %d", config.StorageLimit)
+	query += fmt.Sprintf(" ORDER BY date ASC LIMIT %d", storage.StorageLimit)
 
 	rows, err := db.Query(query, args...)
 	if err != nil {

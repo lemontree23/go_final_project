@@ -7,6 +7,8 @@ import (
 	_ "github.com/mattn/go-sqlite3"
 )
 
+const StorageLimit = 50
+
 type Storage struct {
 	db *sql.DB
 }

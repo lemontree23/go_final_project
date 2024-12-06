@@ -1,6 +1,5 @@
 package config
 
 const (
-	TimeFormat   = "20060102"
-	StorageLimit = 50
+	TimeFormat = "20060102"
 )
