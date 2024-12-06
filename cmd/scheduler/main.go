@@ -1,15 +1,16 @@
 package main
 
 import (
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-	_ "github.com/mattn/go-sqlite3"
 	"log/slog"
 	"net/http"
 	"os"
 	"scheduler/internal/config"
 	"scheduler/internal/handlers"
 	"scheduler/internal/storage"
+
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func main() {
